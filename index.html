@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>留言板</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            width: 100%;
+            background: #fff;
+            border-radius: 20px;
+            padding: 48px 40px 40px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+            text-align: center;
+        }
+        h1 {
+            font-size: 32px;
+            font-weight: 600;
+            color: #1a1a2e;
+            margin-bottom: 40px;
+        }
+        .btn {
+            display: inline-block;
+            background: #0066ff;
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            padding: 16px 32px;
+            font-size: 20px;
+            font-weight: 500;
+            cursor: pointer;
+            text-decoration: none;
+            box-shadow: 0 4px 12px rgba(0,102,255,0.25);
+            transition: background 0.2s, box-shadow 0.2s;
+            min-width: 200px;
+        }
+        .btn:hover {
+            background: #004ccc;
+            box-shadow: 0 6px 20px rgba(0,102,255,0.35);
+        }
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            align-items: center;
+        }
+        .btn-group .btn { width: 100%; max-width: 280px; }
+        @media (max-width: 500px) {
+            .container { padding: 32px 20px; }
+            h1 { font-size: 26px; }
+            .btn { font-size: 17px; padding: 14px 24px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📝 留言板</h1>
+        <div class="btn-group">
+            <a href="write.html" class="btn">✍️ 留言</a>
+            <a href="read.html" class="btn">📖 查看留言</a>
+        </div>
+    </div>
+</body>
+</html>

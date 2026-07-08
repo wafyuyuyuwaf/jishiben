@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>写留言</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            width: 100%;
+            background: #fff;
+            border-radius: 20px;
+            padding: 48px 40px 40px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+        }
+        h1 { font-size: 28px; font-weight: 600; color: #1a1a2e; margin-bottom: 28px; }
+        .form-group { text-align: left; margin-bottom: 20px; }
+        .form-group label { display: block; font-weight: 500; margin-bottom: 6px; font-size: 15px; }
+        .form-control {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1.5px solid #dce0e6;
+            border-radius: 10px;
+            font-size: 16px;
+            font-family: inherit;
+            background: #fafbfc;
+            transition: border-color 0.2s;
+        }
+        .form-control:focus {
+            outline: none;
+            border-color: #0066ff;
+            box-shadow: 0 0 0 3px rgba(0,102,255,0.15);
+        }
+        textarea.form-control { resize: vertical; min-height: 80px; }
+        .btn {
+            display: inline-block;
+            background: #0066ff;
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            padding: 14px 32px;
+            font-size: 18px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s, box-shadow 0.2s;
+            width: 100%;
+            box-shadow: 0 4px 12px rgba(0,102,255,0.25);
+        }
+        .btn:hover:not(:disabled) { background: #004ccc; box-shadow: 0 6px 20px rgba(0,102,255,0.35); }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; box-shadow: none; }
+        .btn-link {
+            background: none;
+            color: #0066ff;
+            text-decoration: underline;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 0;
+        }
+        .btn-link:hover { color: #004ccc; }
+        .success-box {
+            background: #e8f5e9;
+            border-radius: 12px;
+            padding: 32px 24px;
+            color: #1e5a2b;
+            display: none;
+            margin-top: 20px;
+            text-align: center;
+        }
+        .success-box.show { display: block; }
+        .success-box .icon { font-size: 48px; margin-bottom: 12px; }
+        .success-box h2 { font-size: 22px; font-weight: 600; margin-bottom: 8px; }
+        .footer-link {
+            display: inline-block;
+            margin-top: 24px;
+            color: #6b7a8f;
+            text-decoration: none;
+            font-size: 15px;
+        }
+        .footer-link:hover { color: #0066ff; text-decoration: underline; }
+        .text-center { text-align: center; }
+        @media (max-width: 500px) {
+            .container { padding: 32px 20px; }
+            h1 { font-size: 24px; }
+            .btn { font-size: 16px; padding: 12px 24px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>✍️ 写留言</h1>
+
+        <!-- ============================================================
+        【配置区】请替换为您的 GitHub 信息
+        ============================================================ -->
+        <script>
+            // ============================================================
+            // 配置区 ———— 请替换为您的 GitHub 信息
+            // ============================================================
+            const CONFIG = {
+                OWNER: 'YOUR_GITHUB_USERNAME',   // 替换为您的 GitHub 用户名
+                REPO: 'YOUR_REPO_NAME',          // 替换为您的仓库名
+                TOKEN: 'YOUR_PERSONAL_ACCESS_TOKEN' // 替换为您的 Personal Access Token
+            };
+            // ============================================================
+        </script>
+
+        <form id="issueForm">
+            <div class="form-group">
+                <label for="title">标题（选填）</label>
+                <input type="text" id="title" class="form-control" placeholder="标题（选填）" maxlength="255" />
+            </div>
+            <div class="form-group">
+                <label for="body">内容 <span style="color:#d32f2f;">*</span></label>
+                <textarea id="body" class="form-control" placeholder="内容..." rows="3" required></textarea>
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+                <button type="submit" class="btn" id="submitBtn">提交留言</button>
+            </div>
+        </form>
+
+        <div class="success-box" id="successBox">
+            <div class="icon">✅</div>
+            <h2>留言发布成功！</h2>
+            <p>您的留言已保存到 GitHub Issues。</p>
+            <a href="read.html" class="btn-link">📖 查看留言</a>
+        </div>
+
+        <div class="text-center">
+            <a href="index.html" class="footer-link">← 返回首页</a>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const form = document.getElementById('issueForm');
+            const submitBtn = document.getElementById('submitBtn');
+            const successBox = document.getElementById('successBox');
+            const titleInput = document.getElementById('title');
+            const bodyInput = document.getElementById('body');
+
+            const { OWNER, REPO, TOKEN } = CONFIG;
+            const API_URL = `https://api.github.com/repos/${OWNER}/${REPO}/issues`;
+
+            if (OWNER === 'YOUR_GITHUB_USERNAME' || REPO === 'YOUR_REPO_NAME' || TOKEN === 'YOUR_PERSONAL_ACCESS_TOKEN') {
+                console.warn('⚠️ 请先在代码中配置 OWNER、REPO 和 TOKEN');
+            }
+
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const title = titleInput.value.trim() || '无标题留言';
+                const body = bodyInput.value.trim();
+                if (!body) {
+                    alert('❌ 请填写留言内容');
+                    return;
+                }
+
+                submitBtn.disabled = true;
+                submitBtn.textContent = '提交中...';
+
+                try {
+                    const response = await fetch(API_URL, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `token ${TOKEN}`,
+                            'Accept': 'application/vnd.github.v3+json',
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ title, body })
+                    });
+
+                    if (!response.ok) {
+                        let errorMsg = `HTTP ${response.status}`;
+                        try {
+                            const errorData = await response.json();
+                            errorMsg = errorData.message || errorMsg;
+                        } catch (_) {}
+                        throw new Error(`创建留言失败：${errorMsg}`);
+                    }
+
+                    form.style.display = 'none';
+                    successBox.classList.add('show');
+
+                } catch (error) {
+                    alert(`❌ 提交失败：${error.message}`);
+                } finally {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = '提交留言';
+                }
+            });
+
+            // 自动聚焦到内容输入框
+            document.addEventListener('DOMContentLoaded', () => {
+                document.getElementById('body').focus();
+            });
+        })();
+    </script>
+</body>
+</html>

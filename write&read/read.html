@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>查看留言</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            width: 100%;
+            background: #fff;
+            border-radius: 20px;
+            padding: 48px 40px 40px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+        }
+        .read-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 28px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .read-header h1 { font-size: 28px; font-weight: 600; color: #1a1a2e; margin: 0; }
+        .btn {
+            display: inline-block;
+            background: #0066ff;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 20px;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 12px rgba(0,102,255,0.2);
+        }
+        .btn:hover { background: #004ccc; box-shadow: 0 6px 20px rgba(0,102,255,0.3); }
+        .btn:disabled { opacity: 0.6; cursor: not-allowed; box-shadow: none; }
+        .issue-list {
+            text-align: left;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-bottom: 28px;
+            min-height: 100px;
+        }
+        .issue-card {
+            background: #fff;
+            border: 1px solid #eef0f4;
+            border-radius: 14px;
+            padding: 20px 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .issue-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.07); }
+        .issue-card .issue-number {
+            font-size: 13px;
+            font-weight: 600;
+            color: #8e98a8;
+            margin-bottom: 2px;
+        }
+        .issue-card .issue-title {
+            font-size: 19px;
+            font-weight: 600;
+            color: #1a1a2e;
+            margin-bottom: 6px;
+        }
+        .issue-card .issue-body {
+            font-size: 15px;
+            color: #2d3748;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-break: break-word;
+            margin-bottom: 10px;
+        }
+        .issue-card .issue-meta {
+            font-size: 13px;
+            color: #8e98a8;
+            border-top: 1px solid #f0f2f5;
+            padding-top: 10px;
+        }
+        .empty-state, .loading-state {
+            text-align: center;
+            padding: 48px 20px;
+            color: #8e98a8;
+            font-size: 16px;
+        }
+        .error-state {
+            text-align: center;
+            padding: 32px 20px;
+            color: #d32f2f;
+            font-size: 16px;
+        }
+        .footer-link {
+            display: inline-block;
+            margin-top: 8px;
+            color: #6b7a8f;
+            text-decoration: none;
+            font-size: 15px;
+        }
+        .footer-link:hover { color: #0066ff; text-decoration: underline; }
+        .text-center { text-align: center; }
+        @media (max-width: 500px) {
+            .container { padding: 32px 20px; }
+            .read-header h1 { font-size: 22px; }
+            .read-header .btn { font-size: 13px; padding: 6px 16px; }
+            .issue-card { padding: 16px 18px; }
+            .issue-card .issue-title { font-size: 17px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="read-header">
+            <h1>📖 所有留言</h1>
+            <button class="btn" id="refreshBtn">🔄 刷新</button>
+        </div>
+
+        <!-- ============================================================
+        【配置区】请替换为您的 GitHub 信息
+        ============================================================ -->
+        <script>
+            // ============================================================
+            // 配置区 ———— 请替换为您的 GitHub 信息
+            // ============================================================
+            const CONFIG = {
+                OWNER: 'YOUR_GITHUB_USERNAME',   // 替换为您的 GitHub 用户名
+                REPO: 'YOUR_REPO_NAME',          // 替换为您的仓库名
+                TOKEN: 'YOUR_PERSONAL_ACCESS_TOKEN' // 替换为您的 Personal Access Token
+            };
+            // ============================================================
+        </script>
+
+        <div id="issueList" class="issue-list">
+            <div class="loading-state">⏳ 加载中...</div>
+        </div>
+
+        <div class="text-center">
+            <a href="index.html" class="footer-link">← 返回首页</a>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const { OWNER, REPO, TOKEN } = CONFIG;
+            const API_URL = `https://api.github.com/repos/${OWNER}/${REPO}/issues?state=all&per_page=100&sort=created&direction=desc`;
+
+            const issueListEl = document.getElementById('issueList');
+            const refreshBtn = document.getElementById('refreshBtn');
+
+            if (OWNER === 'YOUR_GITHUB_USERNAME' || REPO === 'YOUR_REPO_NAME' || TOKEN === 'YOUR_PERSONAL_ACCESS_TOKEN') {
+                console.warn('⚠️ 请先在代码中配置 OWNER、REPO 和 TOKEN');
+            }
+
+            function escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+
+            async function fetchIssues() {
+                issueListEl.innerHTML = `<div class="loading-state">⏳ 加载中...</div>`;
+                refreshBtn.disabled = true;
+
+                try {
+                    const response = await fetch(API_URL, {
+                        headers: {
+                            'Authorization': `token ${TOKEN}`,
+                            'Accept': 'application/vnd.github.v3+json'
+                        }
+                    });
+
+                    if (!response.ok) {
+                        let errorMsg = `HTTP ${response.status}`;
+                        try {
+                            const errorData = await response.json();
+                            errorMsg = errorData.message || errorMsg;
+                        } catch (_) {}
+                        throw new Error(`获取留言失败：${errorMsg}`);
+                    }
+
+                    const issues = await response.json();
+                    const filtered = issues.filter(issue => !issue.pull_request);
+
+                    if (filtered.length === 0) {
+                        issueListEl.innerHTML = `<div class="empty-state">📭 暂无留言</div>`;
+                        return;
+                    }
+
+                    let html = '';
+                    filtered.forEach(issue => {
+                        const createdAt = new Date(issue.created_at);
+                        const formattedTime = createdAt.toLocaleString('zh-CN', {
+                            year: 'numeric', month: '2-digit', day: '2-digit',
+                            hour: '2-digit', minute: '2-digit', second: '2-digit'
+                        });
+                        const title = issue.title || '无标题';
+                        const body = issue.body || '（内容为空）';
+                        html += `
+                            <div class="issue-card">
+                                <div class="issue-number">#${issue.number}</div>
+                                <div class="issue-title">${escapeHtml(title)}</div>
+                                <div class="issue-body">${escapeHtml(body)}</div>
+                                <div class="issue-meta">📅 ${formattedTime}</div>
+                            </div>
+                        `;
+                    });
+                    issueListEl.innerHTML = html;
+
+                } catch (error) {
+                    issueListEl.innerHTML = `<div class="error-state">❌ ${escapeHtml(error.message)}</div>`;
+                } finally {
+                    refreshBtn.disabled = false;
+                }
+            }
+
+            fetchIssues();
+            refreshBtn.addEventListener('click', fetchIssues);
+        })();
+    </script>
+</body>
+</html>

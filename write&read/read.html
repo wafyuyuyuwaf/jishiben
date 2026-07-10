@@ -122,8 +122,8 @@
 <body>
     <div class="container">
         <div class="read-header">
-            <h1>📖 所有留言</h1>
-            <button class="btn" id="refreshBtn">🔄 刷新</button>
+            <h1>所有留言</h1>
+            <button class="btn" id="refreshBtn">刷新</button>
         </div>
 
    
@@ -148,11 +148,11 @@ const CONFIG = {
         </script>
 
         <div id="issueList" class="issue-list">
-            <div class="loading-state">⏳ 加载中...</div>
+            <div class="loading-state">...加载中...</div>
         </div>
 
         <div class="text-center">
-            <a href="index.html" class="footer-link">← 返回首页</a>
+            <a href="index.html" class="footer-link"></a>
         </div>
     </div>
 
@@ -175,7 +175,7 @@ const CONFIG = {
             }
 
             async function fetchIssues() {
-                issueListEl.innerHTML = `<div class="loading-state">⏳ 加载中...</div>`;
+                issueListEl.innerHTML = `<div class="loading-state">加载中...</div>`;
                 refreshBtn.disabled = true;
 
                 try {
@@ -199,7 +199,7 @@ const CONFIG = {
                     const filtered = issues.filter(issue => !issue.pull_request);
 
                     if (filtered.length === 0) {
-                        issueListEl.innerHTML = `<div class="empty-state">📭 暂无留言</div>`;
+                        issueListEl.innerHTML = `<div class="empty-state">暂无留言</div>`;
                         return;
                     }
 
@@ -217,7 +217,7 @@ const CONFIG = {
                                 <div class="issue-number">#${issue.number}</div>
                                 <div class="issue-title">${escapeHtml(title)}</div>
                                 <div class="issue-body">${escapeHtml(body)}</div>
-                                <div class="issue-meta">📅 ${formattedTime}</div>
+                                <div class="issue-meta">${formattedTime}</div>
                             </div>
                         `;
                     });
